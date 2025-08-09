@@ -6,6 +6,7 @@
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    /* Your CSS unchanged */
     * { box-sizing: border-box; }
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -96,36 +97,39 @@
   </div>
 
   <script>
-    // Anti-devtools and right-click block:
-    (function() {
-      function detectDevTools() {
-        const threshold = 160;
-        const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-        const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-        if (widthThreshold || heightThreshold) {
-          alert("Developer tools détectés! Fermeture de la page...");
-          window.close();
-        }
-      }
+    // ----- Anti-DevTools & Right-click blocking -----
+    // Block right-click context menu
+    window.addEventListener('contextmenu', e => e.preventDefault());
 
-      window.addEventListener('resize', detectDevTools);
-      window.addEventListener('keydown', function(e) {
-        // Block F12, Ctrl+Shift+I/J/C, Ctrl+U, Ctrl+Shift+C
-        if (
-          e.key === 'F12' ||
-          (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
-          (e.ctrlKey && e.key.toUpperCase() === 'U')
-        ) {
-          e.preventDefault();
-          alert("Developer tools sont désactivés sur cette page.");
-          window.close();
-          return false;
+    // Block common developer tools shortcuts
+    window.addEventListener('keydown', function(e) {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
+        (e.ctrlKey && e.key.toUpperCase() === 'U')
+      ) {
+        e.preventDefault();
+        alert("L'ouverture des outils de développement est désactivée sur cette page.");
+      }
+    });
+
+    // Detect DevTools using debugger trap (works in many browsers)
+    function detectDevTools() {
+      let devtoolsOpen = false;
+      const element = new Image();
+      Object.defineProperty(element, 'id', {
+        get: function() {
+          devtoolsOpen = true;
+          alert("Les outils de développement sont ouverts. Veuillez les fermer.");
+          // Optionally you can do something here, like redirect or disable features.
         }
       });
-      window.addEventListener('contextmenu', e => e.preventDefault());
-    })();
+      console.log(element);
+      return devtoolsOpen;
+    }
+    setInterval(detectDevTools, 2000);
 
-    // Main IPTV player logic
+    // ----- Your IPTV player code starts here -----
     const video = document.getElementById('video');
     const speedTest = document.getElementById('speedTestResult');
     const speedWarning = document.getElementById('speedWarning');
@@ -277,3 +281,6 @@
   </script>
 </body>
 </html>
+
+
+
