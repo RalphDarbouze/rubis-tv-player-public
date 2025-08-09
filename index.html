@@ -1,1 +1,237 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>RUBIS TV PLAYER</title><script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>*{box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:#121212;color:#fff;margin:0;padding:0;display:flex;flex-direction:column;align-items:center;min-height:100vh}h1{margin-top:20px;font-size:2em;text-align:center;color:#4CAF50}#video-container{width:100%;max-width:1000px;margin:20px}video{width:100%;height:auto;border:4px solid #4CAF50;border-radius:10px;background:#000}#controls{background:#1e1e1e;padding:20px;border-radius:10px;width:100%;max-width:1000px;box-shadow:0 2px 10px rgba(0,0,0,.4)}select,input[type=text],input[type=file],button{width:100%;max-width:600px;margin:10px auto;display:block;padding:10px;border-radius:5px;border:none;font-size:1em}button{background:#4CAF50;color:#fff;cursor:pointer;transition:background .3s ease}button:hover{background:#45a049}#channelInfo{margin:10px auto;text-align:center;font-size:1.2em;font-weight:700;color:#FFD700}@media screen and (max-width:768px){h1{font-size:1.5em}#controls{padding:15px}}@media screen and (min-width:1200px){#video-container{max-width:90%}}</style><script>document.addEventListener("contextmenu",e=>e.preventDefault()),document.addEventListener("keydown",e=>{if(e.ctrlKey&&(e.key==="u"||e.key==="U")||e.key==="F12"||e.ctrlKey&&e.shiftKey&&(e.key==="I"||e.key==="i"||e.key==="J"||e.key==="j"))e.preventDefault()});</script></head><body><h1>📺 RUBIS TV PLAYER</h1><div id="video-container"><video id="video" controls></video><div id="channelInfo"></div></div><div id="controls"><h3>Sélectionnez la chaîne</h3><select id="channelSelect" onchange="changeChannel*
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>RUBIS TV PLAYER</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* Your original styles here (minimized for brevity) */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #121212;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 2em;
+      text-align: center;
+      color: #4caf50;
+    }
+
+    #video-container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 20px;
+    }
+
+    video {
+      width: 100%;
+      height: auto;
+      border: 4px solid #4caf50;
+      border-radius: 10px;
+      background: #000;
+    }
+
+    #controls {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 1000px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    select,
+    input[type='text'],
+    input[type='file'],
+    button {
+      width: 100%;
+      max-width: 600px;
+      margin: 10px auto;
+      display: block;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      font-size: 1em;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #channelInfo {
+      margin: 10px auto;
+      text-align: center;
+      font-size: 1.2em;
+      font-weight: bold;
+      color: #ffd700;
+    }
+
+    @media screen and (max-width: 768px) {
+      h1 {
+        font-size: 1.5em;
+      }
+
+      #controls {
+        padding: 15px;
+      }
+    }
+
+    @media screen and (min-width: 1200px) {
+      #video-container {
+        max-width: 90%;
+      }
+    }
+  </style>
+
+  <script>
+    // Disable right-click and common shortcuts
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
+    document.addEventListener('keydown', (e) => {
+      if (
+        (e.ctrlKey && (e.key === 'u' || e.key === 'U')) ||
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j'))
+      ) {
+        e.preventDefault();
+      }
+    });
+  </script>
+</head>
+<body>
+  <h1>📺 RUBIS TV PLAYER</h1>
+
+  <div id="video-container">
+    <video id="video" controls></video>
+    <div id="channelInfo"></div>
+  </div>
+
+  <div id="controls">
+    <h3>Sélectionnez la chaîne</h3>
+    <select id="channelSelect" onchange="changeChannel()"></select>
+
+    <h3 style="margin-top: 30px;">Chaîne Personnalisée </h3>
+    <input type="text" id="m3uUrl" placeholder="Ne pas utiliser" />
+    <button onclick="loadM3UFromUrl()">Load from URL</button>
+    <input type="file" id="m3uFile" accept=".m3u,.m3u8" />
+  </div>
+
+  <script>
+    const video = document.getElementById('video');
+    let hls;
+    let channels = [];
+
+    const DEFAULT_M3U_URL =
+      'https://gist.githubusercontent.com/RalphDarbouze/7fc242ebfecbba4f6854becb8b8abc94/raw/ea72074575541484197cddb7d5aa60a78005fba4/my_first_iptv.m3u';
+
+    window.onload = function () {
+      loadDefaultPlaylist();
+    };
+
+    function loadDefaultPlaylist() {
+      fetch(DEFAULT_M3U_URL)
+        .then((response) => response.text())
+        .then(parseM3U)
+        .catch((err) => alert('Error loading default playlist: ' + err));
+    }
+
+    function loadM3UFromUrl() {
+      const m3uUrl = document.getElementById('m3uUrl').value;
+      if (!m3uUrl) return alert('Ne pas utiliser.');
+      fetch(m3uUrl)
+        .then((response) => response.text())
+        .then(parseM3U)
+        .catch((err) => alert('Error loading M3U: ' + err));
+    }
+
+    document.getElementById('m3uFile').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        parseM3U(e.target.result);
+      };
+      reader.readAsText(file);
+    });
+
+    function parseM3U(m3uContent) {
+      channels = [];
+      const lines = m3uContent.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith('#EXTINF:')) {
+          const channelName = lines[i].split(',')[1]?.trim() || `Channel ${channels.length + 1}`;
+          const channelUrl = lines[i + 1]?.trim();
+          if (channelUrl) {
+            channels.push({ name: channelName, url: channelUrl });
+          }
+        }
+      }
+      if (channels.length === 0) return alert('No channels found in M3U.');
+      updateChannelList();
+    }
+
+    function updateChannelList() {
+      const select = document.getElementById('channelSelect');
+      select.innerHTML = '';
+      channels.forEach((channel, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = channel.name;
+        select.appendChild(option);
+      });
+
+      // Auto-play last selected or first channel
+      const lastIndex = localStorage.getItem('lastChannelIndex');
+      if (lastIndex && channels[lastIndex]) {
+        select.value = lastIndex;
+        changeChannel();
+      } else {
+        changeChannel();
+      }
+    }
+
+    function changeChannel() {
+      const selectedIndex = document.getElementById('channelSelect').value;
+      const channel = channels[selectedIndex];
+      if (!channel) return;
+
+      localStorage.setItem('lastChannelIndex', selectedIndex);
+      document.getElementById('channelInfo').textContent = `La chaîne actuellement diffusée est :: ${channel.name}`;
+
+      if (hls) hls.destroy();
+
+      if (Hls.isSupported()) {
+        hls = new Hls();
+        hls.loadSource(channel.url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = channel.url;
+        video.addEventListener('loadedmetadata', () => video.play());
+      } else {
+        alert('HLS not supported in this browser.');
+      }
+    }
+  </script>
+</body>
+</html>
+
